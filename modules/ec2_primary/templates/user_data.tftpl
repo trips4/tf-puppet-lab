@@ -1,0 +1,24 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${fqdn}
+manage_etc_hosts: true
+package_update: true
+packages:
+  - curl
+write_files:
+  - path: /tmp/pe-install.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      cd /tmp
+      curl -JLO https://pm.puppetlabs.com/puppet-enterprise/2025.8.0/puppet-enterprise-2025.8.0-ubuntu-22.04-amd64.tar.gz
+      tar -xzf puppet-enterprise-*.tar.gz
+      cd puppet-enterprise-*/
+      echo "${pe_conf_b64}" | base64 -d > /tmp/pe.conf
+      sudo ./puppet-enterprise-installer -c /tmp/pe.conf
+runcmd:
+  - [ "/bin/bash", "/tmp/pe-install.sh" ]
+  - [ "/opt/puppetlabs/bin/puppet", "agent", "-t" ]
+  - [ "/opt/puppetlabs/bin/puppet", "agent", "-t" ]
